@@ -18,6 +18,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import pandas as pd
 import matplotlib as mpl
+import gzip
 
 
 
@@ -55,9 +56,11 @@ c1, c2 = st.columns((1, 1))
 
 
 # Load images and geoDF
-X = np.load('my_images.npy')
+
+
+X = np.load(gzip.GzipFile('my_images.npy.gz'))
 gdf = gpd.read_file('dataframe.gpkg')
-y = np.load('my_labels.npy')
+y = np.load(gzip.GzipFile('my_labels.npy.gz'))
 
 X = np.moveaxis(X, 1, 3)
 

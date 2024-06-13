@@ -58,7 +58,10 @@ c1, c2 = st.columns((1, 1))
 # Load images and geoDF
 
 
-X = np.load(gzip.GzipFile('my_images.npy.gz'))
+X1 = np.load(gzip.GzipFile('X1.npy.gz'))
+X2 = np.load(gzip.GzipFile('X2.npy.gz'))
+X = np.concatenate([X1,X2], axis=0)
+
 gdf = gpd.read_file('dataframe.gpkg')
 y = np.load(gzip.GzipFile('my_labels.npy.gz'))
 
@@ -154,7 +157,22 @@ c1, c2, c3 = st.columns((1, 1, 1))
 
 with c1 :
     try :
-        st.image(X[my_id], caption= 'Original image', width=300)
+        fig, ax = plt.subplots(figsize=(15,15))
+
+        rgb_color = (15/255, 17/255, 22/255)
+
+        fig.patch.set_facecolor(rgb_color)
+
+        cax = ax.imshow(X[my_id])
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        buf = io.BytesIO()
+        plt.savefig(buf, bbox_inches='tight', format='png')
+        buf.seek(0)
+
+        st.image(buf, caption = 'Original image',use_column_width=True)
     except:
         pass
 

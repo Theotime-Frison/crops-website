@@ -47,6 +47,22 @@ mapping = {0: 'Background',
  13: 'Orchards',
  14: 'Beetroot'}
 
+yields = {0: 0.1,
+1: 6.325,
+ 2: 0.1,
+ 3: 0.1,
+ 4: 0.1,
+ 5: 0.1,
+ 6: 8.7,
+ 7: 0.1,
+ 8: 0.1,
+ 9: 0.1,
+ 10: 6.95,
+ 11: 0.1,
+ 12: 0.1,
+ 13: 0.1,
+ 14: 0.1}
+
 def generate_colors_from_cmap(cmap_name, num_colors):
     return [plt.get_cmap(cmap_name)(i) for i in np.linspace(0, 1, num_colors)]
 
@@ -240,22 +256,36 @@ with c3 :
 
 
 
+c1, c2 = st.columns((1, 1))
+c1.title('🌾 Surface prediction (ha)')
+c2.title('🧑‍🌾 Production (t/year)')
+
+with c1 :
+    try:
+        unique, count = np.unique(response, return_counts=True)
+        df = pd.DataFrame({'id': unique, 'count': count})
+        df['Category'] = df.id.map(mapping)
+        df['Surface (ha)'] = round(df['count'] * 10 * 10 / 10000, 1)
+        df.drop(columns=['count', 'id'],inplace=True)
+        df.set_index('Category', inplace=True)
+
+        st.bar_chart(df[df.index != 'Background'])
+    except:
+        st.write('Please select a tile on the map to get prediction.')
 
 
+with c2 :
+    try:
+        yields = pd.DataFrame({'id': yields.keys(), 'yields':yields.values()})
+        df = pd.DataFrame({'id': unique, 'count': count})
+        df['Category'] = df.id.map(mapping)
+        merged_df = pd.merge(df[df.index != 'Background'],yields,on='id', how='inner')
 
+        merged_df['Surface (ha)'] = round(merged_df['count'] * 10 * 10 / 10000, 1)
+        merged_df['Production (t)'] = merged_df['Surface (ha)'] * merged_df['yields']
 
-'''
-# 🌾 Surface prediction (ha)
-'''
+        res_df = merged_df.drop(columns=['count', 'id', 'yields', 'Surface (ha)']).set_index('Category')
 
-try:
-    unique, count = np.unique(response, return_counts=True)
-    df = pd.DataFrame({'id': unique, 'count': count})
-    df['Category'] = df.id.map(mapping)
-    df['Surface (ha)'] = round(df['count'] * 10 * 10 / 10000, 1)
-    df.drop(columns=['count', 'id'],inplace=True)
-    df.set_index('Category', inplace=True)
-
-    st.bar_chart(df[df.index != 'Background'])
-except:
-    st.write('Please select a tile on the map to get crop yields prediction.')
+        st.bar_chart(res_df[res_df.index != 'Background'])
+    except:
+        st.write('Please select a tile on the map to get prediction.')

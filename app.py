@@ -26,6 +26,8 @@ import gzip
 st.set_page_config(layout = 'wide')
 
 '''
+# Satellite Crops
+
 # 🌱 What's growing in my field?
 '''
 
@@ -119,10 +121,8 @@ with c2 :
 
         cmap= ListedColormap(colors)
 
-        option = st.slider('Transparency', 0, 100,60)
-
         cax = ax.imshow(X[my_id])
-        cax = ax.imshow(response, cmap=cmap, alpha=option/100)
+        cax = ax.imshow(response, cmap=cmap, alpha=0.6)
 
         # Legend
         # Create a legend for the categorical data

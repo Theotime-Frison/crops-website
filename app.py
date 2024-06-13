@@ -19,6 +19,7 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 import matplotlib as mpl
 import gzip
+import altair as alt
 
 
 
@@ -41,7 +42,7 @@ mapping = {0: 'Background',
  7: 'Oilseeds',
  8: 'Barley',
  9: 'Potatoes',
- 10: 'Meadow / Fallow',
+ 10: 'Meadow',
  11: 'Protein crops',
  12: 'Sunflower',
  13: 'Orchards',
@@ -264,12 +265,19 @@ with c1 :
     try:
         unique, count = np.unique(response, return_counts=True)
         df = pd.DataFrame({'id': unique, 'count': count})
-        df['Category'] = df.id.map(mapping)
-        df['Surface (ha)'] = round(df['count'] * 10 * 10 / 10000, 1)
+        df['Crop'] = df.id.map(mapping)
+        df['(ha)'] = round(df['count'] * 10 * 10 / 10000, 1)
         df.drop(columns=['count', 'id'],inplace=True)
-        df.set_index('Category', inplace=True)
+        df.set_index('Crop', inplace=True)
 
-        st.bar_chart(df[df.index != 'Background'])
+        chart = alt.Chart(df[df.index != 'Background'].reset_index()).mark_bar().encode(
+        x=alt.X('Crop:N', axis=alt.Axis(labelAngle=0)),
+        y="(ha):Q"
+        ).configure_axis(labelFontSize=15)
+
+        st.altair_chart(chart, theme="streamlit", use_container_width=True)
+
+        #st.bar_chart(df[df.index != 'Background'])
     except:
         st.write('Please select a tile on the map to get prediction.')
 
@@ -278,14 +286,20 @@ with c2 :
     try:
         yields = pd.DataFrame({'id': yields.keys(), 'yields':yields.values()})
         df = pd.DataFrame({'id': unique, 'count': count})
-        df['Category'] = df.id.map(mapping)
+
+        df['Crop'] = df.id.map(mapping)
         merged_df = pd.merge(df[df.index != 'Background'],yields,on='id', how='inner')
 
         merged_df['Surface (ha)'] = round(merged_df['count'] * 10 * 10 / 10000, 1)
-        merged_df['Production (t)'] = merged_df['Surface (ha)'] * merged_df['yields']
+        merged_df['(t/year)'] = merged_df['Surface (ha)'] * merged_df['yields']
 
-        res_df = merged_df.drop(columns=['count', 'id', 'yields', 'Surface (ha)']).set_index('Category')
+        res_df = merged_df.drop(columns=['count', 'id', 'yields', 'Surface (ha)']).set_index('Crop')
 
-        st.bar_chart(res_df[res_df.index != 'Background'])
+        chart = alt.Chart(res_df[res_df.index != 'Background'].reset_index()).mark_bar().encode(
+        x=alt.X('Crop:N', axis=alt.Axis(labelAngle=0)),
+        y="(t/year):Q"
+        ).configure_axis(labelFontSize=15)
+
+        st.altair_chart(chart, theme="streamlit", use_container_width=True)
     except:
         st.write('Please select a tile on the map to get prediction.')
